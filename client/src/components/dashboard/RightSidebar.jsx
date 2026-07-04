@@ -53,9 +53,9 @@ function RightSidebar({ streak = 0, lessonsCount = 0, onStartPostgres }) {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="hidden w-[340px] shrink-0 border-l border-[#EDF1F4] bg-white xl:flex xl:flex-col"
+      className="flex flex-col w-full gap-6 xl:w-[340px] shrink-0 xl:border-l xl:border-[#EDF1F4] bg-transparent xl:bg-white"
     >
-      <div className="space-y-7 overflow-y-auto p-6">
+      <div className="space-y-7 xl:overflow-y-auto xl:p-6">
         
         {/* Streak */}
         <motion.section
