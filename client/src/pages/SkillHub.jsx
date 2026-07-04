@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "../layouts/DashboardLayout";
 
 import Hero from "../components/skillhub/Hero";
-import SearchBar from "../components/skillhub/SearchBar";
+import Searchbar from "../components/skillhub/Searchbar";
 import CategoryCard from "../components/skillhub/CategoryCard";
 import ContinueCard from "../components/skillhub/ContinueCard";
 import CourseCard from "../components/skillhub/CourseCard";
@@ -255,7 +255,7 @@ function SkillHub() {
             }
           />
 
-          <SearchBar
+          <Searchbar
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
             onSearchSubmit={handleSearchSubmit}
