@@ -7,6 +7,7 @@ import {
   Moon,
   ChevronDown,
   X,
+  Menu,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import profileService from "../../services/profileService";
@@ -15,7 +16,7 @@ const DEFAULT_NOTIFICATIONS = [];
 
 const MOCK_NOTIFS_POOL = [];
 
-function Navbar() {
+function Navbar({ onMenuToggle }) {
   const { user } = useAuth();
   const [isDark, setIsDark] = useState(false);
   const [showBell, setShowBell] = useState(false);
@@ -200,10 +201,18 @@ function Navbar() {
   const initial = user?.name ? user.name.charAt(0).toUpperCase() : "U";
 
   return (
-    <header className="h-24 bg-white border-b border-[#EDF1F4] flex items-center justify-between px-8 relative z-50">
+    <header className="h-20 md:h-24 bg-white border-b border-[#EDF1F4] flex items-center justify-between px-4 md:px-8 relative z-50 gap-4">
       
+      {/* Mobile Menu Toggle */}
+      <button 
+        onClick={onMenuToggle}
+        className="md:hidden p-2 -ml-2 text-gray-500 hover:text-[#428475] cursor-pointer"
+      >
+        <Menu size={24} />
+      </button>
+
       {/* Search Input Container */}
-      <div ref={searchContainerRef} className="w-[560px] relative">
+      <div ref={searchContainerRef} className="flex-1 md:flex-none md:w-[560px] relative">
         <Search
           size={18}
           className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400"
@@ -345,14 +354,14 @@ function Navbar() {
         )}
       </div>
 
-      <div className="flex items-center gap-5">
+      <div className="flex items-center gap-2 md:gap-5">
 
         {/* Notification Bell */}
         <div className="relative">
           <button
             onClick={() => setShowBell(!showBell)}
             title="Notifications"
-            className="w-14 h-14 rounded-2xl bg-[#F8FAFB] flex items-center justify-center relative cursor-pointer transition hover:bg-[#EEF8F4] hover:text-[#428475]"
+            className="w-10 h-10 md:w-14 md:h-14 rounded-2xl bg-[#F8FAFB] flex items-center justify-center relative cursor-pointer transition hover:bg-[#EEF8F4] hover:text-[#428475]"
           >
             <Bell size={20} />
             {unreadCount > 0 && (
@@ -427,7 +436,7 @@ function Navbar() {
         <button
           onClick={() => window.location.href = "/chat"}
           title="Open Chat"
-          className="w-14 h-14 rounded-2xl bg-[#F8FAFB] flex items-center justify-center cursor-pointer transition hover:bg-[#EEF8F4] hover:text-[#428475]"
+          className="hidden md:flex w-14 h-14 rounded-2xl bg-[#F8FAFB] items-center justify-center cursor-pointer transition hover:bg-[#EEF8F4] hover:text-[#428475]"
         >
           <MessageCircle size={20} />
         </button>
@@ -436,9 +445,9 @@ function Navbar() {
         <div
           onClick={() => window.location.href = "/profile"}
           title="Edit Profile"
-          className="flex items-center gap-4 ml-2 cursor-pointer group"
+          className="flex items-center gap-2 md:gap-4 ml-1 md:ml-2 cursor-pointer group"
         >
-          <div className="w-14 h-14 rounded-full bg-[#428475] text-white flex items-center justify-center font-bold transition group-hover:scale-105 overflow-hidden border border-[#EDF1F4]/10">
+          <div className="w-10 h-10 md:w-14 md:h-14 rounded-full bg-[#428475] text-white flex items-center justify-center font-bold transition group-hover:scale-105 overflow-hidden border border-[#EDF1F4]/10">
             {avatarUrl ? (
               <img
                 src={`http://localhost:5000${avatarUrl}`}

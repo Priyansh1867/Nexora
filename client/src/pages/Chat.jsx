@@ -68,13 +68,15 @@ function Chat() {
 
   return (
     <DashboardLayout>
-      <div className="flex h-[calc(100vh-100px)] gap-8">
-        <ChatSidebar />
+      <div className="flex flex-col lg:flex-row h-[calc(100vh-100px)] lg:gap-8">
+        <div className="hidden lg:block">
+          <ChatSidebar />
+        </div>
 
-        <div className="flex flex-1 flex-col overflow-hidden rounded-[30px] border border-[#EDF1F4] bg-[#F8FAFB]">
+        <div className="flex flex-1 flex-col overflow-hidden rounded-none md:rounded-[30px] border-0 md:border md:border-[#EDF1F4] bg-[#F8FAFB] -mx-4 md:mx-0 h-full">
           <ChatHeader />
 
-          <div className="flex-1 space-y-5 overflow-y-auto p-8">
+          <div className="flex-1 space-y-5 overflow-y-auto p-4 md:p-8">
             {errorMsg && (
               <div className="rounded-2xl bg-red-50 border border-red-200/60 p-4 text-xs font-bold text-red-500 shadow-sm mb-4">
                 ⚠️ Connection Status: {errorMsg}.
@@ -101,7 +103,9 @@ function Chat() {
           <MessageInput onSendMessage={handleSendMessage} />
         </div>
 
-        <RightSidebar />
+        <div className="hidden xl:block">
+          <RightSidebar />
+        </div>
       </div>
     </DashboardLayout>
   );

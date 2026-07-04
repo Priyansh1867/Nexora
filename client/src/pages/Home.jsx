@@ -193,8 +193,8 @@ function Home() {
 
   return (
     <DashboardLayout>
-      <div className="flex gap-8">
-        <div className="min-w-0 flex-1 space-y-8">
+      <div className="flex flex-col lg:flex-row gap-8">
+        <div className="min-w-0 flex-1 space-y-8 overflow-hidden">
           
           <WelcomeHeader onContinueClick={() => {
             const incomplete = coursesList.find((c) => c.progress < 100) || coursesList[0];

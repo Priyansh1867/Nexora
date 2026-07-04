@@ -204,8 +204,8 @@ function TeamFinder() {
 
   return (
     <DashboardLayout>
-      <div className="flex gap-8">
-        <div className="flex-1 space-y-8">
+      <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex-1 space-y-8 overflow-hidden">
           <Hero
             onFindTeammatesClick={() =>
               document.getElementById("recommended-teammates")?.scrollIntoView({

@@ -20,7 +20,7 @@ import { useAuth } from "../../context/AuthContext";
 import courseService from "../../services/courseService";
 import profileService from "../../services/profileService";
 
-function Sidebar() {
+function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }) {
   const { user } = useAuth();
   
   const [milestone, setMilestone] = useState({ completed: 0, total: 5 });
@@ -67,21 +67,41 @@ function Sidebar() {
 
   return (
     <>
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 z-40 md:hidden animate-in fade-in"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       <aside
-        className="
-          w-[300px]
+        className={`
+          w-[280px] md:w-[300px]
           h-screen
           bg-[#16332D]
           text-white
           flex
           flex-col
-          px-6
-          py-7
+          px-5 md:px-6
+          py-6 md:py-7
           shadow-2xl
           border-r border-[#1F4039]
           shrink-0
-        "
+          fixed md:relative
+          z-50 md:z-0
+          transition-transform duration-300
+          ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+          left-0 top-0
+        `}
       >
+        {/* Mobile Close Button */}
+        <button 
+          onClick={() => setIsMobileMenuOpen(false)}
+          className="absolute right-4 top-4 p-2 text-gray-400 hover:text-white md:hidden cursor-pointer"
+        >
+          <X size={20} />
+        </button>
         {/* Logo Link to Dashboard/Home */}
         <div
           onClick={() => window.location.href = "/dashboard"}
@@ -260,7 +280,7 @@ function Sidebar() {
             </button>
           </div>
 
-          <div className="mt-5">
+          <div className="mt-5 hidden md:block">
             <div className="flex justify-between text-[11px] font-bold text-emerald-100">
               <span>Profile Completion</span>
               <span>{profileCompletion}%</span>

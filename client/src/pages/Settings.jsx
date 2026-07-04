@@ -25,9 +25,9 @@ function Settings() {
 
   return (
     <DashboardLayout>
-      <div className="flex gap-8">
+      <div className="flex flex-col lg:flex-row gap-8">
         
-        <div className="flex-1 space-y-8">
+        <div className="flex-1 space-y-8 overflow-hidden">
           
           <section>
             <h1 className="text-4xl font-bold text-[#172033]">Settings</h1>

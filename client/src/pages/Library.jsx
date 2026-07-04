@@ -119,8 +119,8 @@ function Library() {
 
   return (
     <DashboardLayout>
-      <div className="flex gap-8">
-        <div className="flex-1 space-y-8">
+      <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex-1 space-y-8 overflow-hidden">
           <Hero
             onExploreClick={() => document.getElementById("ongoing-playlists")?.scrollIntoView({ behavior: "smooth" })}
             onUploadClick={() => setShowUploadModal(true)}
