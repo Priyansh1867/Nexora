@@ -70,6 +70,8 @@ function Library() {
   const [showPlayer, setShowPlayer] = useState(false);
   const [selectedResource, setSelectedResource] = useState(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [activeCategoryFilter, setActiveCategoryFilter] = useState("All");
+  const [activeBranchFilter, setActiveBranchFilter] = useState("All");
   const [bookmarkedList, setBookmarkedList] = useState(() => {
     const saved = localStorage.getItem("nexora_bookmarks");
     return saved ? JSON.parse(saved) : [];
@@ -114,8 +116,42 @@ function Library() {
     fetchResources();
   }, [fetchResources]);
 
+  // Extract unique branches from Notes resources
+  const uniqueBranches = Array.from(
+    new Set(
+      resourcesList
+        .filter((r) => r.category.includes(" - Notes"))
+        .map((r) => r.category.split(" - ")[0])
+    )
+  ).filter(Boolean);
+
+  // Filter Logic
+  const filteredResources = resourcesList.filter((r) => {
+    const isNotes = r.category.includes(" - Notes") || r.category === "Notes";
+    
+    // Category Filter Match
+    let categoryMatch = true;
+    if (activeCategoryFilter !== "All") {
+      if (activeCategoryFilter === "Notes" && isNotes) {
+        categoryMatch = true;
+      } else {
+        categoryMatch = r.category.toLowerCase() === activeCategoryFilter.toLowerCase() || 
+                        r.category.toLowerCase().endsWith(`- ${activeCategoryFilter.toLowerCase()}`);
+      }
+    }
+
+    // Branch Filter Match
+    let branchMatch = true;
+    if (activeBranchFilter !== "All" && isNotes) {
+      const branchName = r.category.split(" - ")[0];
+      branchMatch = branchName === activeBranchFilter;
+    }
+
+    return categoryMatch && branchMatch;
+  });
+
   // Derive featured resource dynamically from uploaded resources
-  const featured = resourcesList.length > 0 ? resourcesList[0] : null;
+  const featured = filteredResources.length > 0 ? filteredResources[0] : null;
 
   return (
     <DashboardLayout>
@@ -126,10 +162,14 @@ function Library() {
             onUploadClick={() => setShowUploadModal(true)}
           />
 
-          <SearchBar onSearch={(q) => { setCustomSearchQuery(q); setShowPlayer(true); }} />
+          <SearchBar 
+            onSearch={(q) => { setCustomSearchQuery(q); setShowPlayer(true); }}
+            onCategoryClick={() => document.getElementById("library-categories")?.scrollIntoView({ behavior: "smooth" })}
+            onFilterClick={() => document.getElementById("popular-resources")?.scrollIntoView({ behavior: "smooth" })}
+          />
 
           {/* Categories Section */}
-          <section>
+          <section id="library-categories">
             <div className="mb-6 flex items-center justify-between">
               <div>
                 <h2 className="text-3xl font-bold text-[#172033]">
@@ -143,7 +183,12 @@ function Library() {
 
             <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
               {categories.map((category) => {
-                const count = resourcesList.filter(r => r.category.toLowerCase() === category.title.toLowerCase()).length;
+                const isNotes = category.title === "Notes";
+                const count = resourcesList.filter(r => {
+                  if (isNotes) return r.category.includes(" - Notes") || r.category === "Notes";
+                  return r.category.toLowerCase() === category.title.toLowerCase() || r.category.toLowerCase().endsWith(`- ${category.title.toLowerCase()}`);
+                }).length;
+
                 return (
                   <CategoryCard
                     key={category.title}
@@ -151,6 +196,11 @@ function Library() {
                     resources={count}
                     icon={category.icon}
                     color={category.color}
+                    onClick={() => {
+                      setActiveCategoryFilter(category.title);
+                      setActiveBranchFilter("All");
+                      document.getElementById("popular-resources")?.scrollIntoView({ behavior: "smooth" });
+                    }}
                   />
                 );
               })}
@@ -168,10 +218,11 @@ function Library() {
             {featured ? (
               <FeaturedCard
                 title={featured.title}
-                category={featured.category}
+                category={featured.category.replace(" - Notes", "")}
                 author={featured.author}
                 rating={4.8}
-                description={`A professional community resource uploaded to help you learn and grow in ${featured.category}.`}
+                image="/featured_resource.jpg"
+                description={`A professional community resource uploaded to help you learn and grow in ${featured.category.replace(" - Notes", "")}.`}
                 onReadClick={() => setSelectedResource(featured)}
                 isBookmarked={bookmarkedList.some((b) => b.id === featured.id)}
                 onBookmarkToggle={() => handleBookmarkToggle(featured)}
@@ -189,26 +240,53 @@ function Library() {
           </div>
 
           {/* Popular Resources Section */}
-          <section>
-            <div className="mb-6">
-              <h2 className="text-3xl font-bold text-[#172033]">
-                Popular Resources
-              </h2>
-              <p className="mt-2 text-gray-500">
-                Most downloaded resources this week.
-              </p>
+          <section id="popular-resources">
+            <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-3xl font-bold text-[#172033]">
+                  {activeCategoryFilter === "All" ? "Popular Resources" : `${activeCategoryFilter} Resources`}
+                </h2>
+                <p className="mt-2 text-gray-500">
+                  {activeCategoryFilter === "All" ? "Most downloaded resources this week." : `Showing resources in ${activeCategoryFilter}`}
+                </p>
+              </div>
+
+              <div className="flex gap-2">
+                {activeCategoryFilter !== "All" && (
+                  <button 
+                    onClick={() => { setActiveCategoryFilter("All"); setActiveBranchFilter("All"); }}
+                    className="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition cursor-pointer"
+                  >
+                    Clear Filter
+                  </button>
+                )}
+
+                {(activeCategoryFilter === "Notes" || activeCategoryFilter === "All") && uniqueBranches.length > 0 && (
+                  <select
+                    value={activeBranchFilter}
+                    onChange={(e) => setActiveBranchFilter(e.target.value)}
+                    className="px-4 py-2 text-sm font-semibold bg-white border border-[#EDF1F4] rounded-xl outline-none focus:border-[#428475] cursor-pointer"
+                  >
+                    <option value="All">All Branches</option>
+                    {uniqueBranches.map(branch => (
+                      <option key={branch} value={branch}>{branch}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
             </div>
 
             <div className="grid gap-6 xl:grid-cols-3">
-              {resourcesList.length === 0 ? (
+              {filteredResources.length === 0 ? (
                 <div className="col-span-3 text-center py-10 bg-gray-50 rounded-[30px] border border-dashed border-gray-200 text-gray-400 font-semibold text-xs">
-                  No resources uploaded yet. Upload note PDFs to share study material!
+                  No resources match the selected filters.
                 </div>
               ) : (
-                resourcesList.slice(0, 3).map((resource) => (
+                filteredResources.map((resource) => (
                   <ResourceCard
                     key={resource.id || resource.title}
                     {...resource}
+                    category={resource.category.replace(" - Notes", "")}
                     onPreview={() => setSelectedResource(resource)}
                     bookmarked={bookmarkedList.some((b) => b.id === resource.id)}
                     onBookmarkToggle={() => handleBookmarkToggle(resource)}
@@ -232,16 +310,16 @@ function Library() {
             </div>
 
             <div className="space-y-5">
-              {resourcesList.length === 0 ? (
+              {filteredResources.length === 0 ? (
                 <div className="text-center py-10 bg-gray-50 rounded-[30px] border border-dashed border-gray-200 text-gray-400 font-semibold text-xs">
                   No recent uploads.
                 </div>
               ) : (
-                resourcesList.slice(0, 3).map((resource) => (
+                filteredResources.slice(0, 3).map((resource) => (
                   <RecentCard
                     key={resource.id || resource.title}
                     title={resource.title}
-                    category={resource.category}
+                    category={resource.category.replace(" - Notes", "")}
                     uploadedBy={resource.uploadedBy}
                     uploadDate={resource.uploadDate}
                     readTime="5 min read"

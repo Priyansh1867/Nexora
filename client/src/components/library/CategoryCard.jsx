@@ -7,6 +7,7 @@ function CategoryCard({
   resources,
   icon,
   color = "#428475",
+  onClick,
 }) {
   return (
     <div
@@ -41,6 +42,7 @@ function CategoryCard({
       </p>
 
       <button
+        onClick={onClick}
         className="
         mt-8
         flex
@@ -50,6 +52,7 @@ function CategoryCard({
         transition-all
         duration-300
         group-hover:gap-3
+        cursor-pointer
         "
         style={{
           color,

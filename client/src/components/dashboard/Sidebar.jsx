@@ -91,6 +91,7 @@ function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }) {
           fixed md:relative
           z-50 md:z-0
           transition-transform duration-300
+          overflow-y-auto
           ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
           left-0 top-0
         `}
@@ -241,11 +242,14 @@ function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }) {
 
         {/* Profile summary footer card */}
         <div className="mt-auto rounded-[24px] border border-[#2B4A44] bg-[#1F4039] p-5 shadow-md">
-          <div className="flex justify-between">
-            <div className="flex gap-3">
+          <div className="flex justify-between items-start">
+            <div 
+              onClick={() => window.location.href = "/profile"}
+              className="flex gap-3 cursor-pointer hover:opacity-80 transition group"
+            >
               
               {/* Avatar photo display */}
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#428475] font-black shadow-md overflow-hidden border border-[#2B4A44]">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#428475] font-black shadow-md overflow-hidden border border-[#2B4A44] group-hover:border-[#3BBD8A] transition">
                 {profileDetails.avatar_url ? (
                   <img
                     src={`http://localhost:5000${profileDetails.avatar_url}`}
@@ -258,7 +262,7 @@ function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }) {
               </div>
 
               <div>
-                <h4 className="font-bold text-emerald-50 text-sm">
+                <h4 className="font-bold text-emerald-50 text-sm group-hover:text-white transition">
                   {user?.name || "Student"}
                 </h4>
 
@@ -274,7 +278,7 @@ function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }) {
 
             <button 
               onClick={() => window.location.href = "/profile"}
-              className="transition text-emerald-200 hover:text-white cursor-pointer"
+              className="transition text-emerald-200 hover:text-white cursor-pointer mt-1"
             >
               <MoreVertical size={18} />
             </button>

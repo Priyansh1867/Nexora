@@ -9,6 +9,7 @@ import RightSidebar from "../components/chat/RightSidebar";
 
 import chatService from "../services/chatService";
 import connectionService from "../services/connectionService";
+import profileService from "../services/profileService";
 import { useAuth } from "../context/AuthContext";
 
 function Chat() {
@@ -20,13 +21,9 @@ function Chat() {
   const [errorMsg, setErrorMsg] = useState(null);
 
   const fetchMessages = useCallback(async () => {
-    if (!selectedFriend) {
-      setMessagesList([]);
-      setLoading(false);
-      return;
-    }
     try {
-      const data = await chatService.getMessages(selectedFriend.user_id);
+      const receiverId = selectedFriend ? selectedFriend.user_id : 'global';
+      const data = await chatService.getMessages(receiverId);
       const formatted = data.map((m) => ({
         sender: m.sender_id == user?.id ? "me" : "other",
         message: m.content,
@@ -49,17 +46,28 @@ function Chat() {
   useEffect(() => {
     const initFriends = async () => {
       try {
-        const friendsList = await connectionService.getFriends();
-        setFriends(friendsList);
-        if (friendsList.length > 0 && !selectedFriend) {
-          setSelectedFriend(friendsList[0]);
+        let friendsList = await connectionService.getFriends();
+        
+        // If no friends exist, mock them by fetching all profiles for demonstration
+        if (friendsList.length === 0 && user) {
+          const allProfiles = await profileService.getAllProfiles();
+          friendsList = allProfiles
+            .filter((p) => p.user_id !== user.id)
+            .map((p) => ({
+              user_id: p.user_id,
+              name: p.name,
+              role: p.role || "Community Member",
+              avatar_url: p.avatar_url,
+            }));
         }
+
+        setFriends(friendsList);
       } catch (err) {
         console.error("Failed to load friends", err);
       }
     };
     initFriends();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     fetchMessages();
@@ -70,7 +78,7 @@ function Chat() {
   }, [fetchMessages]);
 
   const handleSendMessage = async (content) => {
-    if (!content.trim() || !selectedFriend) return;
+    if (!content.trim()) return;
     try {
       // Optimistic update
       const tempMsg = {
@@ -81,7 +89,8 @@ function Chat() {
       };
       setMessagesList((prev) => [...prev, tempMsg]);
       
-      await chatService.sendMessage(content, selectedFriend.user_id);
+      const receiverId = selectedFriend ? selectedFriend.user_id : 'global';
+      await chatService.sendMessage(content, receiverId);
       fetchMessages();
     } catch (e) {
       console.error("Failed to send message:", e);

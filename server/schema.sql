@@ -39,12 +39,21 @@ CREATE TABLE IF NOT EXISTS resources (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 4. Teams Table (Team Finder)
+-- 4. Teams Table (Team Finder & Projects)
 CREATE TABLE IF NOT EXISTS teams (
     id SERIAL PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
     description TEXT,
     skills_needed TEXT[] DEFAULT '{}',
+    cover_image_url VARCHAR(255),
+    tech_stack TEXT[] DEFAULT '{}',
+    tags TEXT[] DEFAULT '{}',
+    stage VARCHAR(50) DEFAULT 'Planning',
+    demo_link VARCHAR(255),
+    github_link VARCHAR(255),
+    looking_for_teammates BOOLEAN DEFAULT TRUE,
+    timeline VARCHAR(100),
+    communication_mode VARCHAR(100),
     created_by INTEGER REFERENCES users(id) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -55,8 +64,26 @@ CREATE TABLE IF NOT EXISTS team_members (
     team_id INTEGER REFERENCES teams(id) ON DELETE CASCADE,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     role VARCHAR(50) DEFAULT 'Member',
+    status VARCHAR(20) DEFAULT 'pending', -- 'pending', 'accepted', 'declined'
     joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(team_id, user_id)
+);
+
+-- 5.1 Project Comments
+CREATE TABLE IF NOT EXISTS project_comments (
+    id SERIAL PRIMARY KEY,
+    project_id INTEGER REFERENCES teams(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 5.2 Project Likes
+CREATE TABLE IF NOT EXISTS project_likes (
+    project_id INTEGER REFERENCES teams(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (project_id, user_id)
 );
 
 -- 6. Messages Table (Real-time Chat)

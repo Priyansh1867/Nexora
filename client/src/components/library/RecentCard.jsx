@@ -10,9 +10,11 @@ function RecentCard({
   uploadedBy,
   uploadDate,
   readTime,
+  onClick,
 }) {
   return (
     <div
+      onClick={onClick}
       className="
       rounded-[28px]
       border
@@ -23,6 +25,7 @@ function RecentCard({
       duration-300
       hover:-translate-y-1
       hover:shadow-lg
+      cursor-pointer
       "
     >
       <div className="flex items-start gap-5">

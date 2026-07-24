@@ -7,7 +7,13 @@ function CreateTeamModal({ onClose, onCreateSuccess }) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [skillsNeeded, setSkillsNeeded] = useState("");
-  const [maxMembers, setMaxMembers] = useState(5);
+  const [techStack, setTechStack] = useState("");
+  const [tags, setTags] = useState("");
+  const [timeline, setTimeline] = useState("6 Weeks");
+  const [communicationMode, setCommunicationMode] = useState("Discord");
+  const [coverImageUrl, setCoverImageUrl] = useState("");
+  const [stage, setStage] = useState("Planning");
+  const [lookingForTeammates, setLookingForTeammates] = useState(true);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -24,11 +30,30 @@ function CreateTeamModal({ onClose, onCreateSuccess }) {
         .map((s) => s.trim())
         .filter(Boolean);
 
+      const techStackArray = techStack
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+      const tagsArray = tags
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+      // Default cover image if empty
+      const finalCoverImage = coverImageUrl.trim() || `https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=800&h=400`;
+
       await teamService.createTeam({
         name: name.trim(),
         description: description.trim(),
         skills_needed: skillsArray,
-        max_members: Number(maxMembers),
+        tech_stack: techStackArray,
+        tags: tagsArray,
+        timeline,
+        communication_mode: communicationMode,
+        cover_image_url: finalCoverImage,
+        stage,
+        looking_for_teammates: lookingForTeammates
       });
 
       showToast("Team created successfully!");
@@ -56,7 +81,7 @@ function CreateTeamModal({ onClose, onCreateSuccess }) {
               <span className="text-[10px] font-bold uppercase tracking-wider text-[#428475]">
                 Collaborate
               </span>
-              <h2 className="text-lg font-bold text-[#172033]">Create New Team</h2>
+              <h2 className="text-lg font-bold text-[#172033]">Create New Project</h2>
             </div>
           </div>
 
@@ -69,11 +94,11 @@ function CreateTeamModal({ onClose, onCreateSuccess }) {
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-8 space-y-5">
+        <form onSubmit={handleSubmit} className="p-8 space-y-5 overflow-y-auto max-h-[70vh]">
           
           <div>
             <label className="block text-xs font-bold text-gray-600 uppercase mb-2">
-              Team Name <span className="text-red-500">*</span>
+              Project Name <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -101,31 +126,99 @@ function CreateTeamModal({ onClose, onCreateSuccess }) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-gray-600 uppercase mb-2">
-                Required Skills
+                Tech Stack
               </label>
               <input
                 type="text"
-                placeholder="e.g. React, Node.js, Python"
+                placeholder="e.g. React, Node.js"
+                value={techStack}
+                onChange={(e) => setTechStack(e.target.value)}
+                className="w-full h-12 rounded-xl border border-gray-200 px-4 text-xs outline-none focus:border-[#428475] bg-[#F8FAFB] focus:bg-white transition"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-600 uppercase mb-2">
+                Project Tags
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. AI, Healthcare, App"
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                className="w-full h-12 rounded-xl border border-gray-200 px-4 text-xs outline-none focus:border-[#428475] bg-[#F8FAFB] focus:bg-white transition"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-gray-600 uppercase mb-2">
+                Required Roles/Skills
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. UI/UX Designer, QA"
                 value={skillsNeeded}
                 onChange={(e) => setSkillsNeeded(e.target.value)}
                 className="w-full h-12 rounded-xl border border-gray-200 px-4 text-xs outline-none focus:border-[#428475] bg-[#F8FAFB] focus:bg-white transition"
               />
-              <span className="text-[10px] text-gray-400 mt-1 block">Comma separated values</span>
             </div>
-
             <div>
               <label className="block text-xs font-bold text-gray-600 uppercase mb-2">
-                Max Members
+                Timeline
               </label>
               <input
-                type="number"
-                min={2}
-                max={15}
-                value={maxMembers}
-                onChange={(e) => setMaxMembers(e.target.value)}
+                type="text"
+                value={timeline}
+                onChange={(e) => setTimeline(e.target.value)}
                 className="w-full h-12 rounded-xl border border-gray-200 px-4 text-xs outline-none focus:border-[#428475] bg-[#F8FAFB] focus:bg-white transition"
               />
             </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-gray-600 uppercase mb-2">
+                Communication Mode
+              </label>
+              <select
+                value={communicationMode}
+                onChange={(e) => setCommunicationMode(e.target.value)}
+                className="w-full h-12 rounded-xl border border-gray-200 px-4 text-xs outline-none focus:border-[#428475] bg-[#F8FAFB] focus:bg-white transition"
+              >
+                <option value="Discord">Discord</option>
+                <option value="Slack">Slack</option>
+                <option value="WhatsApp">WhatsApp</option>
+                <option value="In-person">In-person</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-600 uppercase mb-2">
+                Project Stage
+              </label>
+              <select
+                value={stage}
+                onChange={(e) => setStage(e.target.value)}
+                className="w-full h-12 rounded-xl border border-gray-200 px-4 text-xs outline-none focus:border-[#428475] bg-[#F8FAFB] focus:bg-white transition"
+              >
+                <option value="Idea">Idea</option>
+                <option value="Planning">Planning</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={lookingForTeammates}
+                onChange={(e) => setLookingForTeammates(e.target.checked)}
+                className="w-4 h-4 text-[#428475] rounded border-gray-300 focus:ring-[#428475]"
+              />
+              We are actively looking for teammates
+            </label>
           </div>
 
           <div className="border-t border-[#EDF1F4] pt-6 mt-6 flex gap-4">
@@ -147,7 +240,7 @@ function CreateTeamModal({ onClose, onCreateSuccess }) {
                   Creating...
                 </>
               ) : (
-                "Create Team"
+                "Add Project"
               )}
             </button>
           </div>

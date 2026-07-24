@@ -23,6 +23,23 @@ function ChatSidebar({ friends, selectedFriend, onSelectFriend }) {
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        {/* Global Chat Option */}
+        <div onClick={() => onSelectFriend(null)}>
+          <ConversationCard
+            name="Nexora Global Chat"
+            message="Community Hub"
+            time=""
+            online={true}
+            unread={0}
+            active={selectedFriend === null}
+            avatar={null}
+          />
+        </div>
+
+        <div className="py-2">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 px-2">Connections</h3>
+        </div>
+
         {friends.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-10 text-center text-gray-400">
             <Users size={32} className="mb-3 opacity-50" />

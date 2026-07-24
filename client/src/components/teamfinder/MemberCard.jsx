@@ -20,6 +20,10 @@ function MemberCard({
   experience = "Intermediate",
   skills = [],
   available = true,
+  bio,
+  github,
+  linkedin,
+  portfolio,
   onConnect,
   connectedState,
 }) {
@@ -92,9 +96,14 @@ function MemberCard({
       </div>
 
       <div className="mt-6 rounded-2xl bg-[#F8FAFB] p-5">
-        <h4 className="font-semibold text-[#172033]">
+        <h4 className="font-semibold text-[#172033] mb-2">
           {college}
         </h4>
+        {bio && (
+          <p className="text-sm text-gray-500 line-clamp-2">
+            {bio}
+          </p>
+        )}
       </div>
 
       <div className="mt-6 flex flex-wrap gap-3">
@@ -108,17 +117,35 @@ function MemberCard({
 
       <div className="mt-8 flex items-center justify-between">
         <div className="flex gap-3">
-          <button className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#EEF8F4] text-[#428475] transition hover:scale-105">
-            <Github size={18} />
-          </button>
+          {github ? (
+            <a href={github} target="_blank" rel="noopener noreferrer" className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#EEF8F4] text-[#428475] transition hover:scale-105">
+              <Github size={18} />
+            </a>
+          ) : (
+            <button disabled className="flex h-11 w-11 items-center justify-center rounded-xl bg-gray-50 text-gray-400 cursor-not-allowed">
+              <Github size={18} />
+            </button>
+          )}
 
-          <button className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#EEF8F4] text-[#428475] transition hover:scale-105">
-            <Linkedin size={18} />
-          </button>
+          {linkedin ? (
+            <a href={linkedin} target="_blank" rel="noopener noreferrer" className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#EEF8F4] text-[#428475] transition hover:scale-105">
+              <Linkedin size={18} />
+            </a>
+          ) : (
+            <button disabled className="flex h-11 w-11 items-center justify-center rounded-xl bg-gray-50 text-gray-400 cursor-not-allowed">
+              <Linkedin size={18} />
+            </button>
+          )}
 
-          <button className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#EEF8F4] text-[#428475] transition hover:scale-105">
-            <Mail size={18} />
-          </button>
+          {portfolio ? (
+            <a href={portfolio} target="_blank" rel="noopener noreferrer" className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#EEF8F4] text-[#428475] transition hover:scale-105">
+              <Briefcase size={18} />
+            </a>
+          ) : (
+            <button disabled className="flex h-11 w-11 items-center justify-center rounded-xl bg-gray-50 text-gray-400 cursor-not-allowed">
+              <Briefcase size={18} />
+            </button>
+          )}
         </div>
 
         <button

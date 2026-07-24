@@ -5,7 +5,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 
-function SearchBar({ onSearch }) {
+function SearchBar({ onSearch, onCategoryClick, onFilterClick }) {
   const [query, setQuery] = useState("");
 
   const handleKeyDown = (e) => {
@@ -50,7 +50,9 @@ function SearchBar({ onSearch }) {
 
         </div>
 
-        <button className="flex h-14 items-center gap-2 rounded-2xl border border-[#E5E7EB] px-6 font-semibold transition hover:border-[#428475]">
+        <button 
+          onClick={onCategoryClick}
+          className="flex h-14 items-center gap-2 rounded-2xl border border-[#E5E7EB] px-6 font-semibold transition hover:border-[#428475] cursor-pointer">
 
           <Filter size={18} />
 
@@ -58,7 +60,9 @@ function SearchBar({ onSearch }) {
 
         </button>
 
-        <button className="flex h-14 items-center gap-2 rounded-2xl border border-[#E5E7EB] px-6 font-semibold transition hover:border-[#428475]">
+        <button 
+          onClick={onFilterClick}
+          className="flex h-14 items-center gap-2 rounded-2xl border border-[#E5E7EB] px-6 font-semibold transition hover:border-[#428475] cursor-pointer">
 
           <SlidersHorizontal size={18} />
 

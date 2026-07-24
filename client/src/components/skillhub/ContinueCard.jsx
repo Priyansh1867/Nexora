@@ -74,8 +74,8 @@ function ContinueCard({
         </button>
       </div>
 
-      <div className="p-7">
-        <h3 className="text-2xl font-bold text-[#172033]">
+      <div className="p-6">
+        <h3 className="text-xl font-bold text-[#172033] line-clamp-2 leading-snug">
           {title}
         </h3>
 
@@ -100,20 +100,18 @@ function ContinueCard({
           </div>
         </div>
 
-        <div className="mt-6 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-gray-500">
-            <Clock3 size={17} />
-
-            {duration}
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex shrink-0 items-center gap-1.5 text-sm font-medium text-gray-500">
+            <Clock3 size={16} />
+            <span className="whitespace-nowrap">{duration}</span>
           </div>
 
           <button
             onClick={onContinue}
-            className="flex items-center gap-2 font-semibold text-[#428475] transition hover:gap-3 cursor-pointer"
+            className="flex shrink-0 items-center gap-1.5 text-sm font-semibold text-[#428475] transition hover:gap-2 cursor-pointer"
           >
-            Continue
-
-            <ArrowRight size={18} />
+            <span className="whitespace-nowrap">Continue</span>
+            <ArrowRight size={16} />
           </button>
         </div>
       </div>

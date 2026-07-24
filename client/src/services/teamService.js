@@ -20,6 +20,21 @@ const teamService = {
     const { data } = await api.get(`/teams/${teamId}/members`);
     return data;
   },
+
+  async handleJoinRequest(teamId, userId, action) {
+    const { data } = await api.post(`/teams/${teamId}/requests/${userId}`, { action });
+    return data;
+  },
+
+  async getComments(teamId) {
+    const { data } = await api.get(`/teams/${teamId}/comments`);
+    return data;
+  },
+
+  async addComment(teamId, content) {
+    const { data } = await api.post(`/teams/${teamId}/comments`, { content });
+    return data;
+  },
 };
 
 export default teamService;

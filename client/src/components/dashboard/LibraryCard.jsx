@@ -1,13 +1,11 @@
 import { useState, useEffect } from "react";
 import {
   BookOpen,
-  Clock3,
-  PlayCircle,
   ArrowRight,
-  CheckCircle2,
 } from "lucide-react";
 import courseService from "../../services/courseService";
 import CoursePlayerModal from "../library/CoursePlayerModal";
+import ContinueCard from "../skillhub/ContinueCard";
 
 const baseCourses = [
   {
@@ -16,8 +14,8 @@ const baseCourses = [
     category: "Frontend",
     progress: 0,
     duration: "4 Lectures",
-    lessons: "React 19 Playlist",
-    color: "from-sky-500 to-cyan-500",
+    instructor: "John Anderson",
+    image: "/images/categories/category_frontend_1784799053689.jpg",
   },
   {
     id: 2,
@@ -25,8 +23,8 @@ const baseCourses = [
     category: "Backend",
     progress: 0,
     duration: "4 Lectures",
-    lessons: "Backend Playlist",
-    color: "from-green-500 to-emerald-500",
+    instructor: "Sarah Wilson",
+    image: "/images/categories/category_database_1784799077589.jpg",
   },
   {
     id: 3,
@@ -34,8 +32,8 @@ const baseCourses = [
     category: "Database",
     progress: 0,
     duration: "4 Lectures",
-    lessons: "Database Playlist",
-    color: "from-indigo-500 to-violet-500",
+    instructor: "Michael Brown",
+    image: "/images/categories/category_devops_1784799119435.jpg",
   },
 ];
 
@@ -93,79 +91,15 @@ function LibraryCard() {
 
       <div className="mt-10 grid gap-6 lg:grid-cols-3 items-stretch">
         {courses.map((course) => (
-          <div
+          <ContinueCard
             key={course.id}
-            className="h-full flex flex-col overflow-hidden rounded-[26px] border border-[#EEF2F5] transition-all duration-300 hover:-translate-y-1 hover:border-[#428475] hover:shadow-xl bg-white"
-          >
-            <div
-              onClick={() => setActiveCourseId(course.id)}
-              className={`h-40 bg-gradient-to-br ${course.color} flex items-center justify-center cursor-pointer hover:opacity-90 transition`}
-            >
-              <PlayCircle
-                size={58}
-                className="text-white"
-                strokeWidth={1.6}
-              />
-            </div>
-
-            <div className="p-6 flex-1 flex flex-col justify-between">
-              <div>
-                <span className="rounded-full bg-[#EEF8F4] px-3 py-1 text-xs font-semibold text-[#428475]">
-                  {course.category}
-                </span>
-
-                <h3 className="mt-4 text-xl font-bold leading-relaxed text-[#172033]">
-                  {course.title}
-                </h3>
-              </div>
-
-              <div>
-                <div className="mt-6 flex items-center justify-between text-sm text-[#667085]">
-                  <div className="flex items-center gap-2">
-                    <Clock3 size={16} />
-                    {course.duration}
-                  </div>
-
-                  <div>{course.lessons}</div>
-                </div>
-              </div>
-
-              <div className="mt-8 flex items-center justify-between gap-4 border-t border-[#EEF2F5]/70 pt-5">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between text-xs font-bold text-[#667085] mb-1.5">
-                    <span>Progress</span>
-                    <span className="text-[#428475]">{course.progress}%</span>
-                  </div>
-
-                  <div className="h-2 overflow-hidden rounded-full bg-[#EDF1F4]">
-                    <div
-                      className="h-full rounded-full bg-[#428475] transition-all"
-                      style={{
-                        width: `${course.progress}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => setActiveCourseId(course.id)}
-                  className="shrink-0 flex items-center justify-center gap-1.5 rounded-xl bg-[#16332D] hover:bg-[#428475] px-4 py-2.5 text-xs font-bold text-white transition duration-200 cursor-pointer shadow-sm"
-                >
-                  {course.progress === 100 ? (
-                    <>
-                      <CheckCircle2 size={14} />
-                      Completed
-                    </>
-                  ) : (
-                    <>
-                      <PlayCircle size={14} />
-                      Continue
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
+            title={course.title}
+            instructor={course.instructor}
+            progress={course.progress}
+            duration={course.duration}
+            image={course.image}
+            onContinue={() => setActiveCourseId(course.id)}
+          />
         ))}
       </div>
 
