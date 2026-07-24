@@ -137,13 +137,6 @@ function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }) {
           />
 
           <SidebarItem
-            to="/profile"
-            title="Profile"
-            icon={<User size={19} />}
-            colorClass="text-sky-400"
-          />
-
-          <SidebarItem
             to="/skill-hub"
             title="SkillHub"
             icon={<BookOpen size={19} />}
