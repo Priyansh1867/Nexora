@@ -1,3 +1,5 @@
+const ytpl = require('ytpl');
+
 // Helper to parse YouTube keyless search results
 const searchYouTube = async (req, res) => {
   const { q } = req.query;
@@ -64,6 +66,33 @@ const searchYouTube = async (req, res) => {
   }
 };
 
+const getPlaylist = async (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    return res.status(400).json({ message: "Playlist ID is required" });
+  }
+
+  try {
+    const playlist = await ytpl(id, { limit: 100 });
+    
+    // Map items to match our frontend video object structure
+    const data = playlist.items.map(item => ({
+      id: item.id,
+      videoId: item.id,
+      title: item.title,
+    }));
+
+    return res.json({
+      title: playlist.title,
+      videos: data
+    });
+  } catch (error) {
+    console.error("YouTube playlist error:", error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   searchYouTube,
+  getPlaylist,
 };

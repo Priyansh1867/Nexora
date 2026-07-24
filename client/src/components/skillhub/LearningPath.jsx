@@ -9,9 +9,12 @@ import {
   Terminal,
   BrainCircuit,
   RotateCcw,
+  Plus,
 } from "lucide-react";
 
-const ROADMAPS = {
+import AddCustomPathModal from "./AddCustomPathModal";
+
+const DEFAULT_ROADMAPS = {
   "Frontend Developer": [
     {
       title: "Internet & HTML/CSS",
@@ -111,18 +114,29 @@ const ROADMAPS = {
 };
 
 function LearningPath() {
+  const [roadmaps, setRoadmaps] = useState(() => {
+    const saved = localStorage.getItem("nexora_custom_roadmaps");
+    return saved ? { ...DEFAULT_ROADMAPS, ...JSON.parse(saved) } : DEFAULT_ROADMAPS;
+  });
+
   const [selectedGoal, setSelectedGoal] = useState(() => {
     return localStorage.getItem("nexora_career_goal") || null;
   });
 
   const [roadmapSteps, setRoadmapSteps] = useState(() => {
     const savedGoal = localStorage.getItem("nexora_career_goal");
-    return savedGoal && ROADMAPS[savedGoal] ? ROADMAPS[savedGoal] : [];
+    const currentRoadmaps = (() => {
+      const saved = localStorage.getItem("nexora_custom_roadmaps");
+      return saved ? { ...DEFAULT_ROADMAPS, ...JSON.parse(saved) } : DEFAULT_ROADMAPS;
+    })();
+    return savedGoal && currentRoadmaps[savedGoal] ? currentRoadmaps[savedGoal] : [];
   });
+
+  const [showCustomModal, setShowCustomModal] = useState(false);
 
   const handleSelectGoal = (goal) => {
     setSelectedGoal(goal);
-    setRoadmapSteps(ROADMAPS[goal]);
+    setRoadmapSteps(roadmaps[goal]);
     localStorage.setItem("nexora_career_goal", goal);
   };
 
@@ -132,30 +146,47 @@ function LearningPath() {
     localStorage.removeItem("nexora_career_goal");
   };
 
-  // Toggle milestone completion (mock interactivity)
+  const handleAddCustomSuccess = (goal, steps) => {
+    const newRoadmaps = { ...roadmaps, [goal]: steps };
+    setRoadmaps(newRoadmaps);
+    
+    // Save to local storage so progress persists
+    localStorage.setItem("nexora_custom_roadmaps", JSON.stringify(newRoadmaps));
+
+    // Update the selected goal and steps directly to avoid stale state issues
+    setSelectedGoal(goal);
+    setRoadmapSteps(steps);
+    localStorage.setItem("nexora_career_goal", goal);
+    
+    setShowCustomModal(false);
+  };
+
+  // Toggle milestone completion (and save state)
   const toggleStepCompleted = (index) => {
-    setRoadmapSteps((prev) => {
-      const updated = prev.map((step, idx) => {
-        if (idx === index) {
-          const nextCompleted = !step.completed;
-          return { ...step, completed: nextCompleted };
-        }
-        return step;
-      });
-
-      // Recalculate locked status sequentially
-      for (let i = 0; i < updated.length; i++) {
-        if (i > 0) {
-          // If the previous step is completed, this step is unlocked. Else locked.
-          updated[i].locked = !updated[i - 1].completed;
-        }
+    const updated = roadmapSteps.map((step, idx) => {
+      if (idx === index) {
+        return { ...step, completed: !step.completed };
       }
-
-      return updated;
+      return step;
     });
+
+    // Recalculate locked status sequentially
+    for (let i = 0; i < updated.length; i++) {
+      if (i > 0) {
+        // If the previous step is completed, this step is unlocked. Else locked.
+        updated[i].locked = !updated[i - 1].completed;
+      }
+    }
+
+    setRoadmapSteps(updated);
+
+    const newRoadmaps = { ...roadmaps, [selectedGoal]: updated };
+    setRoadmaps(newRoadmaps);
+    localStorage.setItem("nexora_custom_roadmaps", JSON.stringify(newRoadmaps));
   };
 
   return (
+    <>
     <section id="career-learning-path" className="rounded-[30px] border border-[#EDF1F4] bg-white p-8 shadow-sm">
       
       {/* Header */}
@@ -172,15 +203,24 @@ function LearningPath() {
           </p>
         </div>
 
-        {selectedGoal && (
+        <div className="flex items-center gap-3">
+          {selectedGoal && (
+            <button
+              onClick={handleResetGoal}
+              className="flex items-center gap-1.5 rounded-xl border border-red-200 text-xs font-bold text-red-500 hover:bg-red-50 px-4 py-2.5 transition cursor-pointer"
+            >
+              <RotateCcw size={14} />
+              Reset Goal
+            </button>
+          )}
           <button
-            onClick={handleResetGoal}
-            className="flex items-center gap-1.5 rounded-xl border border-red-200 text-xs font-bold text-red-500 hover:bg-red-50 px-4 py-2.5 transition cursor-pointer"
+            onClick={() => setShowCustomModal(true)}
+            className="flex items-center gap-1.5 rounded-xl bg-[#428475] hover:bg-[#1A312C] text-xs font-bold text-white px-4 py-2.5 transition cursor-pointer shadow-sm"
           >
-            <RotateCcw size={14} />
-            Reset Goal
+            <Plus size={16} />
+            Add Custom Path
           </button>
-        )}
+        </div>
       </div>
 
       {/* Goal Selector Phase */}
@@ -277,6 +317,14 @@ function LearningPath() {
       )}
 
     </section>
+      
+      {showCustomModal && (
+        <AddCustomPathModal 
+          onClose={() => setShowCustomModal(false)} 
+          onAddSuccess={handleAddCustomSuccess} 
+        />
+      )}
+    </>
   );
 }
 

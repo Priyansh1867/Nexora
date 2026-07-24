@@ -1,16 +1,9 @@
-import {
-  BookOpen,
-  Brain,
-  FolderKanban,
-  Library,
-  MessageCircle,
-  Users,
-} from "lucide-react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 const features = [
   {
-    icon: <Users size={28} />,
+    image: "/images/features/student_team_finder_1784797802067.jpg",
     title: "Team Finder",
     description:
       "Find teammates with matching skills, interests, and project goals instantly.",
@@ -19,9 +12,10 @@ const features = [
       border: "hover:border-purple-200/80 hover:shadow-purple-500/8",
       title: "group-hover:text-purple-700",
     },
+    path: "/team-finder",
   },
   {
-    icon: <BookOpen size={28} />,
+    image: "/images/features/skill_learning_hub_1784797845516.jpg",
     title: "Skill Hub",
     description:
       "Track learning progress and master new technologies with curated learning paths.",
@@ -30,9 +24,10 @@ const features = [
       border: "hover:border-amber-200/80 hover:shadow-amber-500/8",
       title: "group-hover:text-amber-700",
     },
+    path: "/skill-hub",
   },
   {
-    icon: <Library size={28} />,
+    image: "/images/features/digital_resource_library_1784797947963.jpg",
     title: "Resource Library",
     description:
       "Access and share notes, PDFs, books, interview guides, and research papers.",
@@ -41,9 +36,10 @@ const features = [
       border: "hover:border-emerald-200/80 hover:shadow-emerald-500/8",
       title: "group-hover:text-emerald-700",
     },
+    path: "/library",
   },
   {
-    icon: <FolderKanban size={28} />,
+    image: "/images/features/project_workspace_1784797957971.jpg",
     title: "Project Workspace",
     description:
       "Collaborate efficiently using built-in project management boards and kanbans.",
@@ -52,9 +48,10 @@ const features = [
       border: "hover:border-blue-200/80 hover:shadow-blue-500/8",
       title: "group-hover:text-blue-700",
     },
+    path: "/dashboard",
   },
   {
-    icon: <MessageCircle size={28} />,
+    image: "/images/features/realtime_chat_1784797815608.jpg",
     title: "Real-time Chat",
     description:
       "Communicate instantly with teammates in private chats or team group channels.",
@@ -63,9 +60,10 @@ const features = [
       border: "hover:border-pink-200/80 hover:shadow-pink-500/8",
       title: "group-hover:text-pink-700",
     },
+    path: "/chat",
   },
   {
-    icon: <Brain size={28} />,
+    image: "/images/features/ai_powered_learning_1784797826294.jpg",
     title: "AI Powered",
     description:
       "Smart recommendation engines matching you to ideal skills, roadmaps, and peers.",
@@ -74,10 +72,13 @@ const features = [
       border: "hover:border-indigo-200/80 hover:shadow-indigo-500/8",
       title: "group-hover:text-indigo-700",
     },
+    path: "/skill-hub",
   },
 ];
 
 function Features() {
+  const navigate = useNavigate();
+
   const containerVariants = {
     hidden: {},
     visible: {
@@ -137,7 +138,10 @@ function Features() {
               key={feature.title}
               variants={cardVariants}
             >
-              <FeatureCard {...feature} />
+              <FeatureCard 
+                {...feature} 
+                onClick={() => navigate(`/login?redirect=${encodeURIComponent(feature.path)}`)}
+              />
             </motion.div>
           ))}
         </motion.div>
@@ -148,13 +152,15 @@ function Features() {
 }
 
 function FeatureCard({
-  icon,
+  image,
   title,
   description,
   colorClasses,
+  onClick,
 }) {
   return (
     <div
+      onClick={onClick}
       className={`
       group
       h-full
@@ -162,23 +168,30 @@ function FeatureCard({
       border
       border-[#EDF1F4]
       bg-white
-      p-8
+      p-6
       shadow-[0_4px_20px_rgba(0,0,0,0.015)]
       transition-all
       duration-300
       hover:-translate-y-2
+      cursor-pointer
+      flex
+      flex-col
       ${colorClasses.border}
       `}
     >
-      <div className={`flex h-16 w-16 items-center justify-center rounded-2xl transition-all duration-300 ${colorClasses.iconBg} group-hover:text-white group-hover:shadow-md`}>
-        {icon}
+      <div className="w-full h-48 mb-6 overflow-hidden rounded-2xl shadow-sm border border-[#EDF1F4]/50">
+        <img 
+          src={image} 
+          alt={title} 
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+        />
       </div>
 
-      <h3 className={`mt-7 text-2xl font-bold text-[#172033] transition-colors duration-300 ${colorClasses.title}`}>
+      <h3 className={`text-2xl font-bold text-[#172033] transition-colors duration-300 ${colorClasses.title}`}>
         {title}
       </h3>
 
-      <p className="mt-4 leading-relaxed text-[#4B5563]">
+      <p className="mt-4 leading-relaxed text-[#4B5563] flex-1">
         {description}
       </p>
     </div>

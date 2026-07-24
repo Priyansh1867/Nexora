@@ -10,9 +10,11 @@ import InvitationCard from "../components/teamfinder/InvitationCard";
 import ActivityCard from "../components/teamfinder/ActivityCard";
 import RightSidebar from "../components/teamfinder/RightSidebar";
 import CreateTeamModal from "../components/teamfinder/CreateTeamModal";
+import ConnectionCard from "../components/teamfinder/ConnectionCard";
 
 import teamService from "../services/teamService";
 import profileService from "../services/profileService";
+import connectionService from "../services/connectionService";
 import { showToast } from "../utils/toast";
 
 function TeamFinder() {
@@ -24,6 +26,10 @@ function TeamFinder() {
 
   // Invitations list state (Start empty for fresh user)
   const [invitationsList, setInvitationsList] = useState([]);
+  
+  // Connections state
+  const [connectionRequests, setConnectionRequests] = useState([]);
+  const [connectionStatuses, setConnectionStatuses] = useState([]);
 
   // Recent Activity state (Start empty for fresh user)
   const [activitiesList, setActivitiesList] = useState([]);
@@ -82,10 +88,24 @@ function TeamFinder() {
     }
   }, []);
 
+  const fetchConnections = useCallback(async () => {
+    try {
+      const [pending, statuses] = await Promise.all([
+        connectionService.getPendingRequests(),
+        connectionService.getAllStatuses()
+      ]);
+      setConnectionRequests(pending);
+      setConnectionStatuses(statuses);
+    } catch (err) {
+      console.error("Failed to load connections:", err);
+    }
+  }, []);
+
   useEffect(() => {
     fetchTeams();
     fetchTeammates();
-  }, [fetchTeams, fetchTeammates]);
+    fetchConnections();
+  }, [fetchTeams, fetchTeammates, fetchConnections]);
 
   // Toggle skills selections
   const handleSkillToggle = (skill) => {
@@ -95,21 +115,52 @@ function TeamFinder() {
   };
 
   // Teammate Connection Handler
-  const handleConnect = (id, name) => {
-    setTeammatesList((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, connectedState: "sent" } : t))
-    );
+  const handleConnect = async (id, name) => {
+    try {
+      await connectionService.sendRequest(id);
+      showToast(`Connection request sent to ${name}!`);
+      fetchConnections(); // Refresh statuses
 
-    const newActivity = {
-      id: Date.now(),
-      type: "invite",
-      title: "Connection Sent",
-      description: `You sent a collaboration request to ${name}.`,
-      time: "Just Now",
-    };
-    setActivitiesList((prev) => [newActivity, ...prev]);
+      const newActivity = {
+        id: Date.now(),
+        type: "invite",
+        title: "Connection Sent",
+        description: `You sent a collaboration request to ${name}.`,
+        time: "Just Now",
+      };
+      setActivitiesList((prev) => [newActivity, ...prev]);
+    } catch (err) {
+      showToast(err.response?.data?.message || "Failed to send request");
+    }
+  };
 
-    showToast(`Connection request sent to ${name}!`);
+  const handleAcceptConnection = async (connectionId, name) => {
+    try {
+      await connectionService.acceptRequest(connectionId);
+      showToast(`You are now connected with ${name}!`);
+      fetchConnections();
+
+      const newActivity = {
+        id: Date.now(),
+        type: "project",
+        title: "New Connection",
+        description: `You accepted ${name}'s connection request. You can now chat!`,
+        time: "Just Now",
+      };
+      setActivitiesList((prev) => [newActivity, ...prev]);
+    } catch (err) {
+      showToast("Failed to accept request");
+    }
+  };
+
+  const handleDeclineConnection = async (connectionId) => {
+    try {
+      await connectionService.declineRequest(connectionId);
+      showToast("Connection request declined.");
+      fetchConnections();
+    } catch (err) {
+      showToast("Failed to decline request");
+    }
   };
 
   // Accept Team Invitation Handler
@@ -249,14 +300,19 @@ function TeamFinder() {
                   🔍 No recommended teammates registered yet.
                 </div>
               ) : (
-                filteredTeammates.map((member) => (
-                  <MemberCard
-                    key={member.id}
-                    {...member}
-                    onConnect={() => handleConnect(member.id, member.name)}
-                    connectedState={member.connectedState}
-                  />
-                ))
+                filteredTeammates.map((member) => {
+                  const statusObj = connectionStatuses.find(s => s.receiver_id === member.id || s.requester_id === member.id);
+                  const connectedState = statusObj ? (statusObj.status === 'pending' ? 'sent' : 'accepted') : null;
+                  
+                  return (
+                    <MemberCard
+                      key={member.id}
+                      {...member}
+                      onConnect={() => handleConnect(member.id, member.name)}
+                      connectedState={connectedState}
+                    />
+                  );
+                })
               )}
             </div>
           </section>
@@ -294,22 +350,34 @@ function TeamFinder() {
             <div className="mb-6 flex items-center justify-between">
               <div>
                 <h2 className="text-3xl font-bold text-[#172033]">
-                  Team Invitations
+                  Requests & Invitations
                 </h2>
 
                 <p className="mt-2 text-gray-500">
-                  Invitations waiting for your response.
+                  Requests waiting for your response.
                 </p>
               </div>
             </div>
 
             <div className="grid gap-6 xl:grid-cols-2">
-              {invitationsList.length === 0 ? (
+              {invitationsList.length === 0 && connectionRequests.length === 0 ? (
                 <div className="col-span-2 py-12 text-center text-gray-400 font-semibold bg-gray-50 rounded-[30px] border border-dashed border-gray-200 text-xs">
-                  🎉 All caught up! No pending team invitations.
+                  🎉 All caught up! No pending requests.
                 </div>
               ) : (
-                invitationsList.map((invite) => (
+                <>
+                  {connectionRequests.map((req) => (
+                    <ConnectionCard
+                      key={req.connection_id}
+                      name={req.name}
+                      role={req.role}
+                      college={req.college}
+                      avatar={req.avatar_url || (req.avatar_letter ? "" : null)}
+                      onAccept={() => handleAcceptConnection(req.connection_id, req.name)}
+                      onDecline={() => handleDeclineConnection(req.connection_id)}
+                    />
+                  ))}
+                  {invitationsList.map((invite) => (
                   <InvitationCard
                     key={invite.id}
                     {...invite}
@@ -325,7 +393,8 @@ function TeamFinder() {
                       handleDeclineInvite(invite.id, invite.name, invite.project)
                     }
                   />
-                ))
+                ))}
+                </>
               )}
             </div>
           </section>

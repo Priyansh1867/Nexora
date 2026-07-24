@@ -54,7 +54,7 @@ function HowItWorks() {
 
   return (
     <section
-      id="how"
+      id="howitworks"
       className="bg-[#FAFAFA] py-24"
     >
       <div className="mx-auto max-w-7xl px-6">

@@ -79,8 +79,11 @@ function Login() {
         password: formData.password,
       });
 
+      const searchParams = new URLSearchParams(location.search);
+      const queryRedirect = searchParams.get("redirect");
+
       const redirect =
-        location.state?.from?.pathname || "/dashboard";
+        queryRedirect || location.state?.from?.pathname || "/dashboard";
 
       navigate(redirect, {
         replace: true,
@@ -88,6 +91,7 @@ function Login() {
     } catch (error) {
       setErrors({
         server:
+          error?.response?.data?.message ||
           error?.message ||
           "Unable to login. Please try again.",
       });

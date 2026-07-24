@@ -9,6 +9,8 @@ const teamRoutes = require("./routes/teamRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 const courseRoutes = require("./routes/courseRoutes");
 const youtubeRoutes = require("./routes/youtubeRoutes");
+const aiRoutes = require("./routes/aiRoutes");
+const connectionRoutes = require("./routes/connectionRoutes");
 
 const fs = require("fs");
 const path = require("path");
@@ -49,6 +51,8 @@ app.use("/api/teams", teamRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/youtube", youtubeRoutes);
+app.use("/api/ai", aiRoutes);
+app.use("/api/connections", connectionRoutes);
 
 // Base route
 app.get("/", (req, res) => {

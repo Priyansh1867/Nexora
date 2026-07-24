@@ -126,7 +126,8 @@ function Register() {
     } catch (error) {
       setErrors({
         server:
-          error.message ||
+          error?.response?.data?.message ||
+          error?.message ||
           "Registration failed.",
       });
     } finally {

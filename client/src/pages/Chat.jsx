@@ -2,24 +2,31 @@ import { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "../layouts/DashboardLayout";
 
 import ChatSidebar from "../components/chat/ChatSidebar";
-import ChatHeader from "../components/chat/ChatHeader";
 import MessageBubble from "../components/chat/MessageBubble";
 import MessageInput from "../components/chat/MessageInput";
 import TypingIndicator from "../components/chat/TypingIndicator";
 import RightSidebar from "../components/chat/RightSidebar";
 
 import chatService from "../services/chatService";
+import connectionService from "../services/connectionService";
 import { useAuth } from "../context/AuthContext";
 
 function Chat() {
   const { user } = useAuth();
+  const [friends, setFriends] = useState([]);
+  const [selectedFriend, setSelectedFriend] = useState(null);
   const [messagesList, setMessagesList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState(null);
 
   const fetchMessages = useCallback(async () => {
+    if (!selectedFriend) {
+      setMessagesList([]);
+      setLoading(false);
+      return;
+    }
     try {
-      const data = await chatService.getMessages();
+      const data = await chatService.getMessages(selectedFriend.user_id);
       const formatted = data.map((m) => ({
         sender: m.sender_id == user?.id ? "me" : "other",
         message: m.content,
@@ -40,6 +47,21 @@ function Chat() {
   }, [user]);
 
   useEffect(() => {
+    const initFriends = async () => {
+      try {
+        const friendsList = await connectionService.getFriends();
+        setFriends(friendsList);
+        if (friendsList.length > 0 && !selectedFriend) {
+          setSelectedFriend(friendsList[0]);
+        }
+      } catch (err) {
+        console.error("Failed to load friends", err);
+      }
+    };
+    initFriends();
+  }, []);
+
+  useEffect(() => {
     fetchMessages();
     
     // Poll messages every 3 seconds for mock real-time
@@ -48,7 +70,7 @@ function Chat() {
   }, [fetchMessages]);
 
   const handleSendMessage = async (content) => {
-    if (!content.trim()) return;
+    if (!content.trim() || !selectedFriend) return;
     try {
       // Optimistic update
       const tempMsg = {
@@ -59,7 +81,7 @@ function Chat() {
       };
       setMessagesList((prev) => [...prev, tempMsg]);
       
-      await chatService.sendMessage(content);
+      await chatService.sendMessage(content, selectedFriend.user_id);
       fetchMessages();
     } catch (e) {
       console.error("Failed to send message:", e);
@@ -70,11 +92,32 @@ function Chat() {
     <DashboardLayout>
       <div className="flex flex-col lg:flex-row h-[calc(100vh-100px)] lg:gap-8">
         <div className="hidden lg:block">
-          <ChatSidebar />
+          <ChatSidebar 
+            friends={friends} 
+            selectedFriend={selectedFriend} 
+            onSelectFriend={setSelectedFriend} 
+          />
         </div>
 
         <div className="flex flex-1 flex-col overflow-hidden rounded-none md:rounded-[30px] border-0 md:border md:border-[#EDF1F4] bg-[#F8FAFB] -mx-4 md:mx-0 h-full">
-          <ChatHeader />
+          {/* Mocking ChatHeader since we don't have its source in context, but normally we'd pass selectedFriend here */}
+          <div className="flex h-[88px] items-center justify-between border-b border-[#EDF1F4] bg-white px-4 md:px-8">
+            <div className="flex items-center gap-4">
+              {selectedFriend?.avatar_url ? (
+                <img src={selectedFriend.avatar_url} className="h-12 w-12 rounded-full object-cover" />
+              ) : (
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#428475] text-xl font-bold text-white">
+                  {selectedFriend ? selectedFriend.name.charAt(0) : "N"}
+                </div>
+              )}
+              <div>
+                <h2 className="text-xl font-bold text-[#172033]">{selectedFriend ? selectedFriend.name : "Nexora Global Chat"}</h2>
+                <p className="text-sm font-medium text-green-500">
+                  {selectedFriend ? selectedFriend.role : "Community Hub"}
+                </p>
+              </div>
+            </div>
+          </div>
 
           <div className="flex-1 space-y-5 overflow-y-auto p-4 md:p-8">
             {errorMsg && (

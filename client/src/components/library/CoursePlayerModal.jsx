@@ -1,21 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
 import { X, Play, CheckCircle2, Circle, Trophy, Search, Loader2 } from "lucide-react";
 import courseService from "../../services/courseService";
-
-const coursePlaylists = {
-  1: { title: "React 19 Complete Guide", searchDefault: "React 19 Tutorial" },
-  2: { title: "Node.js & Express Masterclass", searchDefault: "NodeJS Express Tutorial" },
-  3: { title: "PostgreSQL for Developers", searchDefault: "PostgreSQL Database Tutorial" },
-};
+import { coursesData } from "../../data/coursesData";
 
 function CoursePlayerModal({ courseId, onClose, onProgressUpdate, initialQuery }) {
-  const playlist = coursePlaylists[courseId] || { 
-    title: initialQuery ? `Custom Study: ${initialQuery}` : "Custom Study Course", 
-    searchDefault: initialQuery || "Software Engineering Tutorial" 
-  };
-  const [lessons, setLessons] = useState([]);
-  const [activeLesson, setActiveLesson] = useState(null);
-  const [searchQuery, setSearchQuery] = useState(playlist.searchDefault);
+  const predefinedCourse = coursesData[courseId] || null;
+  const [playlistTitle, setPlaylistTitle] = useState(predefinedCourse ? predefinedCourse.title : initialQuery ? `Custom Study: ${initialQuery}` : "Course Playlist");
+  const [channelName, setChannelName] = useState(predefinedCourse ? predefinedCourse.channel : "Nexora Learning");
+  const [channelImage, setChannelImage] = useState(predefinedCourse ? predefinedCourse.image : "/images/categories/category_aiml_1784799097581.jpg");
+  const [lessons, setLessons] = useState(predefinedCourse ? predefinedCourse.lessons : []);
+  const [activeLesson, setActiveLesson] = useState(predefinedCourse && predefinedCourse.lessons.length > 0 ? predefinedCourse.lessons[0] : null);
+  const [searchQuery, setSearchQuery] = useState(initialQuery || "");
   const [completedIds, setCompletedIds] = useState([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -25,7 +20,7 @@ function CoursePlayerModal({ courseId, onClose, onProgressUpdate, initialQuery }
     const loadProgress = async () => {
       try {
         const progressList = await courseService.getCourseProgress();
-        const courseProg = progressList.find((c) => c.course_id === Number(courseId));
+        const courseProg = progressList.find((c) => c.course_id === String(courseId) || c.course_id === Number(courseId));
         if (courseProg && courseProg.completed_lessons) {
           setCompletedIds(courseProg.completed_lessons);
         }
@@ -36,7 +31,7 @@ function CoursePlayerModal({ courseId, onClose, onProgressUpdate, initialQuery }
     loadProgress();
   }, [courseId]);
 
-  // Search YouTube
+  // Search YouTube dynamically for missing or custom courses
   const handleSearch = useCallback(async (queryStr) => {
     if (!queryStr.trim()) return;
     setLoading(true);
@@ -55,11 +50,12 @@ function CoursePlayerModal({ courseId, onClose, onProgressUpdate, initialQuery }
     }
   }, []);
 
-  // Search automatically on mount
+  // Removed fetchPlaylist since we are using predefined static lists.
   useEffect(() => {
-    setSearchQuery(playlist.searchDefault);
-    handleSearch(playlist.searchDefault);
-  }, [playlist.searchDefault, handleSearch]);
+    if (!predefinedCourse && initialQuery) {
+      handleSearch(initialQuery);
+    }
+  }, [initialQuery, predefinedCourse, handleSearch]);
 
   const handleToggleComplete = async (lessonId) => {
     if (saving || !lessons.length) return;
@@ -95,6 +91,7 @@ function CoursePlayerModal({ courseId, onClose, onProgressUpdate, initialQuery }
     ? Math.round((completedCount / lessons.length) * 100)
     : 0;
 
+
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       handleSearch(searchQuery);
@@ -107,11 +104,16 @@ function CoursePlayerModal({ courseId, onClose, onProgressUpdate, initialQuery }
         
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[#EDF1F4] bg-[#F8FAFB] px-8 py-5">
-          <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-[#428475]">
-              Dynamic Playlist Player
-            </span>
-            <h2 className="text-xl font-bold text-[#172033] mt-1">{playlist.title}</h2>
+          <div className="flex items-center gap-4">
+            <div className="h-12 w-12 rounded-full overflow-hidden border border-[#EDF1F4] shadow-sm shrink-0">
+              <img src={channelImage} alt={channelName} className="w-full h-full object-cover" />
+            </div>
+            <div>
+              <span className="text-xs font-bold uppercase tracking-wider text-[#428475]">
+                {channelName}
+              </span>
+              <h2 className="text-xl font-bold text-gray-900 line-clamp-1 mt-0.5">{playlistTitle}</h2>
+            </div>
           </div>
 
           <div className="flex items-center gap-6">

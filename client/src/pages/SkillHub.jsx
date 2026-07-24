@@ -35,6 +35,38 @@ import {
 
 
 function SkillHub() {
+  const predefinedPlaylists = {
+    "Frontend": [
+      { id: "html", title: "HTML & CSS Crash Course", image: "/images/categories/category_frontend_1784799053689.jpg" },
+      { id: "js", title: "Modern JavaScript (ES6+)", image: "/images/categories/category_frontend_1784799053689.jpg" },
+      { id: "react", title: "React 19 Complete Guide", image: "/images/categories/category_frontend_1784799053689.jpg" },
+    ],
+    "Backend": [
+      { id: "node", title: "Node.js & Express Masterclass", image: "/images/categories/category_backend_1784799066478.jpg" },
+      { id: "python", title: "Python Django Fundamentals", image: "/images/categories/category_backend_1784799066478.jpg" },
+      { id: "go", title: "Go API Development", image: "/images/categories/category_backend_1784799066478.jpg" },
+    ],
+    "Database": [
+      { id: "postgres", title: "PostgreSQL for Developers", image: "/images/categories/category_database_1784799077589.jpg" },
+      { id: "mongo", title: "MongoDB Essentials", image: "/images/categories/category_database_1784799077589.jpg" },
+      { id: "redis", title: "Redis Caching in Node", image: "/images/categories/category_database_1784799077589.jpg" },
+    ],
+    "AI / ML": [
+      { id: "ml", title: "Machine Learning with Python", image: "/images/categories/category_aiml_1784799097581.jpg" },
+      { id: "dl", title: "Deep Learning (PyTorch)", image: "/images/categories/category_aiml_1784799097581.jpg" },
+      { id: "nlp", title: "Natural Language Processing", image: "/images/categories/category_aiml_1784799097581.jpg" },
+    ],
+    "DSA": [
+      { id: "cpp", title: "Data Structures in C++", image: "/images/categories/category_dsa_1784799107990.jpg" },
+      { id: "java", title: "Algorithms in Java", image: "/images/categories/category_dsa_1784799107990.jpg" },
+      { id: "dp", title: "Dynamic Programming Guide", image: "/images/categories/category_dsa_1784799107990.jpg" },
+    ],
+    "DevOps": [
+      { id: "docker", title: "Docker & Kubernetes Basics", image: "/images/categories/category_devops_1784799119435.jpg" },
+      { id: "cicd", title: "CI/CD with GitHub Actions", image: "/images/categories/category_devops_1784799119435.jpg" },
+      { id: "aws", title: "AWS Cloud Practitioner", image: "/images/categories/category_devops_1784799119435.jpg" },
+    ],
+  };
   const categories = [
     {
       title: "Frontend",
@@ -81,6 +113,7 @@ function SkillHub() {
       instructor: "John Anderson",
       progress: 0,
       duration: "4 Lectures",
+      image: "/images/categories/category_frontend_1784799053689.jpg"
     },
     {
       id: 2,
@@ -88,6 +121,7 @@ function SkillHub() {
       instructor: "Sarah Wilson",
       progress: 0,
       duration: "4 Lectures",
+      image: "/images/categories/category_backend_1784799066478.jpg"
     },
   ];
 
@@ -154,6 +188,7 @@ function SkillHub() {
       lessons: 54,
       rating: 4.9,
       students: "15.2k",
+      image: "/images/categories/category_frontend_1784799053689.jpg"
     },
     {
       title: "Express & PostgreSQL Masterclass",
@@ -163,6 +198,7 @@ function SkillHub() {
       lessons: 42,
       rating: 4.8,
       students: "11.8k",
+      image: "/images/categories/category_database_1784799077589.jpg"
     },
     {
       title: "System Design Essentials Guide",
@@ -172,6 +208,7 @@ function SkillHub() {
       lessons: 61,
       rating: 4.9,
       students: "20.5k",
+      image: "/images/categories/category_devops_1784799119435.jpg"
     },
   ];
 
@@ -205,7 +242,7 @@ function SkillHub() {
   const [eventsList] = useState([]);
 
   // Explore categories handler (loads 6-7 playlists from YouTube scraper routes)
-  const handleCategoryExplore = async (categoryTitle) => {
+  const handleCategoryExplore = (categoryTitle) => {
     setSelectedCategory(categoryTitle);
     setLoadingPlaylists(true);
     setCategoryPlaylists([]);
@@ -215,16 +252,12 @@ function SkillHub() {
       document.getElementById("category-playlists-explore")?.scrollIntoView({
         behavior: "smooth",
       });
+      // Mock delay for UI smoothness
+      setTimeout(() => {
+        setCategoryPlaylists(predefinedPlaylists[categoryTitle] || []);
+        setLoadingPlaylists(false);
+      }, 600);
     }, 200);
-
-    try {
-      const results = await courseService.searchYouTube(`${categoryTitle} complete course tutorial`);
-      setCategoryPlaylists(results.slice(0, 7)); // Fetch exactly 6-7 playlists!
-    } catch (err) {
-      console.error("Failed to load category playlists:", err);
-    } finally {
-      setLoadingPlaylists(false);
-    }
   };
 
   // Launch Player modal from search box
@@ -320,9 +353,12 @@ function SkillHub() {
                     <div className="grid gap-5 sm:grid-cols-2">
                       {categoryPlaylists.map((playlist, idx) => (
                         <div
-                          key={playlist.videoId + idx}
-                          className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm flex flex-col justify-between"
+                          key={playlist.id}
+                          className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm flex flex-col justify-between group hover:-translate-y-1 transition-all duration-300"
                         >
+                          <div className="w-full h-32 overflow-hidden rounded-xl mb-4 border border-[#EDF1F4]/50">
+                             <img src={playlist.image} alt={playlist.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                          </div>
                           <div>
                             <span className="text-[10px] bg-[#EEF8F4] text-[#428475] font-bold px-2 py-0.5 rounded-full uppercase">
                               Playlist {idx + 1}
@@ -332,9 +368,11 @@ function SkillHub() {
                             </h4>
                           </div>
 
+                          <div className="flex-grow" />
+
                           <button
-                            onClick={() => setCustomSearchQuery(playlist.title)}
-                            className="mt-5 w-full h-10 rounded-xl bg-[#16332D] text-white hover:bg-[#214740] font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
+                            onClick={() => setActiveCourseId(playlist.id)}
+                            className="mt-5 w-full h-10 rounded-xl bg-[#428475] text-white hover:bg-[#214740] font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
                           >
                             <Play size={12} className="fill-white" />
                             Start Learning
@@ -348,29 +386,39 @@ function SkillHub() {
                 {/* Study Partners Sidebar */}
                 <div className="space-y-5">
                   <h3 className="text-lg font-bold text-[#172033]">Study Partners</h3>
-                  <div className="space-y-4">
-                    <div className="bg-white rounded-2xl border border-dashed border-[#428475]/30 p-6 text-center space-y-3">
-                      <div className="h-12 w-12 rounded-full bg-[#EEF8F4] flex items-center justify-center mx-auto">
-                        <Users size={20} className="text-[#428475]" />
+                  <div className="bg-gradient-to-br from-[#16332D] to-[#214740] rounded-3xl p-6 text-center shadow-lg relative overflow-hidden flex flex-col justify-center min-h-[300px]">
+                    {/* Decorative Elements */}
+                    <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#428475]/30 rounded-full blur-3xl"></div>
+                    <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-[#EEF8F4]/20 rounded-full blur-2xl"></div>
+
+                    <div className="relative z-10 space-y-5">
+                      <div className="h-16 w-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center mx-auto border border-white/10 shadow-inner">
+                        <Users size={28} className="text-white drop-shadow-md" />
                       </div>
-                      <h4 className="text-sm font-bold text-[#172033]">Find Study Partners</h4>
-                      <p className="text-[11px] text-gray-400 leading-relaxed">
-                        Connect with real students learning {selectedCategory} in our Team Finder.
-                      </p>
-                      <button
-                        onClick={() => { window.location.href = "/team-finder"; }}
-                        className="w-full h-9 rounded-xl bg-[#16332D] text-white font-bold text-xs transition hover:bg-[#214740] flex items-center justify-center gap-1.5 cursor-pointer"
-                      >
-                        <Users size={12} />
-                        Browse Team Finder
-                      </button>
-                      <button
-                        onClick={handleStartStudyChat}
-                        className="w-full h-9 rounded-xl border border-[#428475]/35 hover:bg-[#EEF8F4] text-[#428475] font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
-                      >
-                        <MessageSquare size={12} />
-                        Open Group Chat
-                      </button>
+                      
+                      <div className="space-y-1.5">
+                        <h4 className="text-xl font-extrabold text-white tracking-tight">Study Together</h4>
+                        <p className="text-[13px] text-emerald-50/80 leading-relaxed max-w-[220px] mx-auto">
+                          Connect with other students learning <span className="font-semibold text-white">{selectedCategory}</span>.
+                        </p>
+                      </div>
+
+                      <div className="pt-3 flex flex-col gap-3">
+                        <button
+                          onClick={() => { window.location.href = "/team-finder"; }}
+                          className="w-full py-3 px-4 rounded-xl bg-white text-[#16332D] font-bold text-sm transition hover:bg-emerald-50 hover:scale-[1.02] flex items-center justify-center gap-2.5 cursor-pointer shadow-md"
+                        >
+                          <Users size={18} className="shrink-0" />
+                          <span>Team Finder</span>
+                        </button>
+                        <button
+                          onClick={handleStartStudyChat}
+                          className="w-full py-3 px-4 rounded-xl border-2 border-white/20 hover:border-white/40 hover:bg-white/10 text-white font-bold text-sm transition hover:scale-[1.02] flex items-center justify-center gap-2.5 cursor-pointer"
+                        >
+                          <MessageSquare size={18} className="shrink-0" />
+                          <span>Group Chat</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
