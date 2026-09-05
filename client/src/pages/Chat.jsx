@@ -41,7 +41,7 @@ function Chat() {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, selectedFriend]);
 
   useEffect(() => {
     const initFriends = async () => {
@@ -70,6 +70,8 @@ function Chat() {
   }, [user]);
 
   useEffect(() => {
+    setLoading(true);
+    setErrorMsg(null);
     fetchMessages();
     
     // Poll messages every 3 seconds for mock real-time

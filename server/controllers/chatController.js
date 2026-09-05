@@ -12,15 +12,37 @@ const getMessages = async (req, res) => {
 
   try {
     let result;
-    if (receiverId === 'global') {
-      result = await db.query(
-        `SELECT m.*, p.avatar_letter, p.avatar_url
-         FROM messages m 
-         LEFT JOIN profiles p ON m.sender_id = p.user_id 
-         WHERE m.receiver_id = 0
-         ORDER BY m.created_at ASC 
-         LIMIT 100`
-      );
+    const isGlobal = receiverId === 'global' || receiverId === '0' || receiverId === 0;
+
+    if (isGlobal) {
+      try {
+        result = await db.query(
+          `SELECT m.*, p.avatar_letter, p.avatar_url
+           FROM messages m 
+           LEFT JOIN profiles p ON m.sender_id = p.user_id 
+           WHERE m.receiver_id IS NULL OR m.receiver_id = 0
+           ORDER BY m.created_at ASC 
+           LIMIT 100`
+        );
+      } catch (queryErr) {
+        if (queryErr.message && queryErr.message.includes("receiver_id")) {
+          // Auto-migrate if receiver_id column is missing in legacy database
+          try {
+            await db.query(`ALTER TABLE messages ADD COLUMN IF NOT EXISTS receiver_id INTEGER REFERENCES users(id) ON DELETE CASCADE;`);
+          } catch (mErr) {
+            console.warn("Auto-migration notice:", mErr.message);
+          }
+          result = await db.query(
+            `SELECT m.*, p.avatar_letter, p.avatar_url
+             FROM messages m 
+             LEFT JOIN profiles p ON m.sender_id = p.user_id 
+             ORDER BY m.created_at ASC 
+             LIMIT 100`
+          );
+        } else {
+          throw queryErr;
+        }
+      }
     } else {
       result = await db.query(
         `SELECT m.*, p.avatar_letter, p.avatar_url
@@ -45,18 +67,40 @@ const getMessages = async (req, res) => {
 const sendMessage = async (req, res) => {
   const { content, receiverId } = req.body;
 
-  if (!content || !receiverId) {
+  if (!content || (receiverId === undefined && receiverId === null)) {
     return res.status(400).json({ message: "Content and Receiver ID are required" });
   }
 
   try {
-    const actualReceiverId = receiverId === 'global' ? 0 : receiverId;
-    const result = await db.query(
-      `INSERT INTO messages (sender_id, receiver_id, sender_name, content) 
-       VALUES ($1, $2, $3, $4) 
-       RETURNING *`,
-      [req.user.id, actualReceiverId, req.user.name, content]
-    );
+    const isGlobal = receiverId === 'global' || receiverId === 0 || receiverId === '0';
+    const actualReceiverId = isGlobal ? null : receiverId;
+
+    let result;
+    try {
+      result = await db.query(
+        `INSERT INTO messages (sender_id, receiver_id, sender_name, content) 
+         VALUES ($1, $2, $3, $4) 
+         RETURNING *`,
+        [req.user.id, actualReceiverId, req.user.name, content]
+      );
+    } catch (insertErr) {
+      if (insertErr.message && insertErr.message.includes("receiver_id")) {
+        // Auto-migrate if receiver_id column is missing
+        try {
+          await db.query(`ALTER TABLE messages ADD COLUMN IF NOT EXISTS receiver_id INTEGER REFERENCES users(id) ON DELETE CASCADE;`);
+        } catch (mErr) {
+          console.warn("Auto-migration notice:", mErr.message);
+        }
+        result = await db.query(
+          `INSERT INTO messages (sender_id, receiver_id, sender_name, content) 
+           VALUES ($1, $2, $3, $4) 
+           RETURNING *`,
+          [req.user.id, actualReceiverId, req.user.name, content]
+        );
+      } else {
+        throw insertErr;
+      }
+    }
 
     return res.status(201).json(result.rows[0]);
   } catch (error) {

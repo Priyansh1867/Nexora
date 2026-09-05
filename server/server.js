@@ -67,6 +67,9 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(PORT, () => {
+const initDb = require("./config/initDb");
+
+app.listen(PORT, async () => {
   console.log(`Nexora backend server is listening on port ${PORT}`);
+  await initDb();
 });
